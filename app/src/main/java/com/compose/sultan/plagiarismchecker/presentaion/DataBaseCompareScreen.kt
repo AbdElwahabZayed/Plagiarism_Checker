@@ -12,19 +12,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import com.compose.sultan.plagiarismchecker.MainActivity
 import com.compose.sultan.plagiarismchecker.model.MyFile
 import com.compose.sultan.plagiarismchecker.presentaion.components.DialogListOfFiles
+import com.compose.sultan.plagiarismchecker.ui.theme.PlagiarismCheckerTheme
+import com.skydoves.landscapist.glide.GlideImage
 import com.thoughtleaf.textsumarizex.DocumentReaderUtil
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun DataBaseCompare(activity: MainActivity){
+fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
     val (text1, setText1) = remember { mutableStateOf("") }
     val (progressImportFromFile1, setProgressImportFromFile1) = remember { mutableStateOf(false) }
     val (progressImportFromDB1, setProgressImportFromDB1) = remember { mutableStateOf(false) }
@@ -59,7 +65,7 @@ fun DataBaseCompare(activity: MainActivity){
         Column(modifier = Modifier.padding(8.dp)) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "First Text",
+                text = "Text",
                 color = MaterialTheme.colors.secondaryVariant,
                 style = MaterialTheme.typography.h6
             )
@@ -67,7 +73,7 @@ fun DataBaseCompare(activity: MainActivity){
             OutlinedTextField(
                 value = text1,
                 onValueChange = { setText1(it) },
-                label = { Text("First Text") },
+                label = { Text("Text") },
                 modifier = Modifier
                     .height(200.dp)
                     .fillMaxWidth()
@@ -108,16 +114,35 @@ fun DataBaseCompare(activity: MainActivity){
                 }
             }
         }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(
+                onClick = {
+                    navController.navigate("search_screen")
+                },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text(text = "Compare with DB")
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        val files: List<MyFile> by activity.myViewModel.myFiles.observeAsState(listOf())
+        DialogListOfFiles(
+            files,
+            textPosition,
+            setText1,
+            {  },
+            showDialog,
+            setShowDialog,
+            setProgressImportFromDB1,
+            {  }
+        )
     }
-    val files: List<MyFile> by activity.myViewModel.myFiles.observeAsState(listOf())
-    DialogListOfFiles(
-        files,
-        textPosition,
-        setText1,
-        {  },
-        showDialog,
-        setShowDialog,
-        setProgressImportFromDB1,
-        {  }
-    )
+
 }
+
+//@Preview(showBackground = true)
+//@Composable
+//fun DBScreen() {
+//    PlagiarismCheckerTheme {
+//        DataBaseCompareScreen(MainActivity())
+//    }
+//}

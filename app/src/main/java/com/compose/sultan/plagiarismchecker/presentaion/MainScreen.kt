@@ -245,22 +245,22 @@ fun MainScreen(activity: MainActivity) {
             modifier = Modifier.align(Alignment.End)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        FloatingActionButton(
-            onClick = {
-                if (activity.checkPermission()) {
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "*/*"
-                    fabLuncher.launch(intent)
-                } else {
-                    activity.requestPermission()
-                    println("in Btn1 Else")
-                }
-            }, modifier = Modifier
-                .align(Alignment.End)
-                .padding(all = 4.dp), elevation = FloatingActionButtonDefaults.elevation(2.dp, 4.dp)
-        ) {
-            Icon(Icons.Filled.Add, "", tint = Color.White)
-        }
+//        FloatingActionButton(
+//            onClick = {
+//                if (activity.checkPermission()) {
+//                    val intent = Intent(Intent.ACTION_GET_CONTENT)
+//                    intent.type = "*/*"
+//                    fabLuncher.launch(intent)
+//                } else {
+//                    activity.requestPermission()
+//                    println("in Btn1 Else")
+//                }
+//            }, modifier = Modifier
+//                .align(Alignment.End)
+//                .padding(all = 4.dp), elevation = FloatingActionButtonDefaults.elevation(2.dp, 4.dp)
+//        ) {
+//            Icon(Icons.Filled.Add, "", tint = Color.White)
+//        }
         val files: List<MyFile> by activity.myViewModel.myFiles.observeAsState(listOf())
         DialogListOfFiles(
             files,
@@ -282,3 +282,5 @@ fun MainScreen(activity: MainActivity) {
 
 
 }
+
+

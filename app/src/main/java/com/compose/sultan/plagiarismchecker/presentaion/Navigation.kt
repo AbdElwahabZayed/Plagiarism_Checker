@@ -16,9 +16,23 @@ fun Navigation(activity: MainActivity) {
         }
 
 
+        composable("menu_screen"){
+            MenuScreen(activity = activity, navController = navController)
+        }
+
         // Main Screen
         composable("main_screen") {
             MainScreen(activity = activity)
         }
+        // Main Screen
+        composable("db_compare") {
+            DataBaseCompareScreen(activity = activity, navController)
+        }
+
+        // Main Screen
+        composable("search_screen") {
+            SearchScreen(activity = activity, navController)
+        }
+
     }
 }
