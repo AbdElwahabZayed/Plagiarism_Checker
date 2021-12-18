@@ -18,9 +18,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavOptionsBuilder
+import androidx.navigation.Navigator
 import com.compose.sultan.plagiarismchecker.MainActivity
 import com.compose.sultan.plagiarismchecker.model.MyFile
 import com.compose.sultan.plagiarismchecker.presentaion.components.DialogListOfFiles
+import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUri
+import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUriToString
 import com.compose.sultan.plagiarismchecker.ui.theme.PlagiarismCheckerTheme
 import com.skydoves.landscapist.glide.GlideImage
 import com.thoughtleaf.textsumarizex.DocumentReaderUtil
@@ -42,10 +46,11 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
             if (it.data != null) {
                 activity.lifecycleScope.launch {
                     it.data?.let { myData ->
-                        val docString: String = DocumentReaderUtil.readWordDocFromUri(
+                        val docString = readWordDocFromUriToString(
                             myData.data,
                             activity.applicationContext
                         )
+
                         withContext(Dispatchers.Main) {
                             setText1(docString)
                             setProgressImportFromFile1(false)
@@ -117,7 +122,8 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
         Spacer(modifier = Modifier.width(8.dp))
         Button(
                 onClick = {
-                    navController.navigate("search_screen")
+                    navController.currentBackStackEntry?.arguments?.putParcelable("text",com.compose.sultan.plagiarismchecker.model.Text(text1))
+                    navController.navigate(Routes.Search.route)
                 },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {

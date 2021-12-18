@@ -3,7 +3,7 @@ plugins {
     id 'kotlin-android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
-
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -85,6 +85,16 @@ dependencies {
     implementation 'com.github.Asutosh11:DocumentReader:0.12'
     implementation "com.google.dagger:hilt-android:2.38.1"
     kapt "com.google.dagger:hilt-compiler:2.38.1"
+
+    implementation (group: 'org.apache.tika', name: 'tika-parsers', version: '1.14'){
+        exclude group: "org.apache.xmlbeans"
+        ['org.apache.commons','commons-logging'].each {
+            exclude group: "$it"
+        }
+    }
+    implementation 'javax.xml.stream:stax-api:1.0'
+    implementation group: 'org.apache.xmlbeans', name: 'xmlbeans', version: '3.0.1'
+    implementation 'com.tom_roush:pdfbox-android:1.8.10.1'
 
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

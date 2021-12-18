@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import androidx.navigation.NavOptionsBuilder
 import com.compose.sultan.plagiarismchecker.R
 import kotlinx.coroutines.delay
 
@@ -38,6 +39,7 @@ fun SplashScreen(navController: NavController) {
         delay(3000L)
         navController.navigate("menu_screen"){
             popUpTo("splash_screen") { inclusive = true }
+
         }
     }
 
