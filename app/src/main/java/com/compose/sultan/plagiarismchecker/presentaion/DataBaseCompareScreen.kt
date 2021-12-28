@@ -1,6 +1,8 @@
 package com.compose.sultan.plagiarismchecker.presentaion
 
 import android.content.Intent
+import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -14,21 +16,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.Navigator
 import com.compose.sultan.plagiarismchecker.MainActivity
 import com.compose.sultan.plagiarismchecker.model.MyFile
 import com.compose.sultan.plagiarismchecker.presentaion.components.DialogListOfFiles
-import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUri
-import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUriToString
-import com.compose.sultan.plagiarismchecker.ui.theme.PlagiarismCheckerTheme
-import com.skydoves.landscapist.glide.GlideImage
-import com.thoughtleaf.textsumarizex.DocumentReaderUtil
-import kotlinx.coroutines.CoroutineScope
+import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUriToStringWithSplitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -41,16 +35,14 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
     val (textPosition, setTextPosition) = remember { mutableStateOf(1) }
     val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
             if (it.data != null) {
                 activity.lifecycleScope.launch {
                     it.data?.let { myData ->
-                        val docString = readWordDocFromUriToString(
+                        val docString = readWordDocFromUriToStringWithSplitter(
                             myData.data,
                             activity.applicationContext
                         )
-
                         withContext(Dispatchers.Main) {
                             setText1(docString)
                             setProgressImportFromFile1(false)
@@ -77,7 +69,7 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = text1,
-                onValueChange = { setText1(it) },
+                onValueChange = { /*setText1(it)*/ },
                 label = { Text("Text") },
                 modifier = Modifier
                     .height(200.dp)
@@ -122,8 +114,10 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
         Spacer(modifier = Modifier.width(8.dp))
         Button(
                 onClick = {
-                    navController.currentBackStackEntry?.arguments?.putParcelable("text",com.compose.sultan.plagiarismchecker.model.Text(text1))
-                    navController.navigate(Routes.Search.route)
+                    Log.e("SearchScreen", "SearchScreen: **- $text1")
+//                    navController.previousBackStackEntry?.arguments?.putString("text", text1)
+//                    navController.saveState()?.putString("text", text1)
+                    navController.navigate(Routes.Search.route,Bundle().apply { putString("text", text1) })
                 },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {

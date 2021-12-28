@@ -223,7 +223,7 @@ fun MainScreen(activity: MainActivity) {
                     setProgressCheck(true)
                     CoroutineScope(Dispatchers.Default).launch {
                         val ratio = LevenshteinDistance.similarity(text1, text2)
-                        val rounded = ratio.toBigDecimal().setScale(1, RoundingMode.UP).toDouble()
+                        val rounded = ratio.toBigDecimal().setScale(1, RoundingMode.UP).toFloat()
                         println("the res it == $rounded")
                         withContext(Dispatchers.Main) {
                             setProgress(ratio.toFloat())

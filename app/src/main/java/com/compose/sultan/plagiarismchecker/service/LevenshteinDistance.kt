@@ -17,7 +17,7 @@ object LevenshteinDistance {
     /**
      * Calculates the similarity (a number within 0 and 1) between two strings.
      */
-    fun similarity(s1: String, s2: String): Double {
+    fun  similarity(s1: String, s2: String): Double {
         var longer = s1
         var shorter = s2
         if (s1.length < s2.length) { // longer should always have greater length
@@ -131,6 +131,33 @@ object LevenshteinDistance {
 
             for (para in paragraphs) {
                 fullDocumentString.append(para.text).append("\n")
+            }
+            fis.close()
+        }
+        return fullDocumentString.toString()
+    }
+    fun readWordDocFromUriToStringWithSplitter(uri: Uri?, context: Context?): String {
+
+        val file = File(context?.let { FilePathHelper(it).getPath(uri!!) }!!)
+        val fullDocumentString: StringBuilder = StringBuilder()
+        val fis = FileInputStream(file.absolutePath)
+
+        if (file.extension == "doc") {
+            val doc = HWPFDocument(fis)
+            val we = WordExtractor(doc)
+            val paragraphs: Array<String> = we.paragraphText
+
+            for (para in paragraphs) {
+                fullDocumentString.append(para).append("`~`")
+            }
+            fis.close()
+
+        } else if (file.extension == "docx") {
+            val document = XWPFDocument(fis)
+            val paragraphs: List<XWPFParagraph> = document.paragraphs
+
+            for (para in paragraphs) {
+                fullDocumentString.append(para.text).append("`~`")
             }
             fis.close()
         }
