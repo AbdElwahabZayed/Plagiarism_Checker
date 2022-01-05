@@ -6,7 +6,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
 import com.compose.sultan.plagiarismchecker.presentaion.components.ItemSimilarity
-import java.util.ArrayList
 
 @Composable
 fun ResultScreen(navController: NavController, list: List<SimilarityBetweenString>){

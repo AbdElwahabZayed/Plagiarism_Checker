@@ -30,10 +30,9 @@ fun FileCard(
             elevation = 1.dp,
             modifier = Modifier.padding(1.dp).fillMaxWidth(),
             color = MaterialTheme.colors.surface ) {
-            Text(text = file.name?.split("/")?.last()?:"",
+            Text(text = (file.name?.split("/")?.last()?:"").replace("primary:",""),
                 style= MaterialTheme.typography.body2,
                 modifier = Modifier.padding(all = 4.dp).clickable(onClick = onClick))
         }
-
     }
 }

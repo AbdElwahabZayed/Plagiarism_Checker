@@ -10,38 +10,61 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
-import java.math.RoundingMode
+
 
 @Composable
-fun ItemSimilarity(item:SimilarityBetweenString){
-    val rounded = item.ratio.toBigDecimal().setScale(1, RoundingMode.UP).toFloat()
+fun ItemSimilarity(item: SimilarityBetweenString) {
+    val rounded = item.ratio.toFloat()
     Column(Modifier.padding(all = 8.dp)) {
-        Text(text = item.pragraph)
-        Spacer(modifier = Modifier.width(8.dp))
-        Row {
-            Text(text = item.fileName)
-            Spacer(modifier = Modifier.width(8.dp))
+        Text(text = item.pragraph, style = TextStyle(color = Color.Black, fontSize = 15.sp))
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = item.fileName.replace("primary", "File Name"),
+                modifier = Modifier
+                    .padding(all = 4.dp)
+                    .weight(2f),
+                style = TextStyle(
+                    color = Color.Black,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
             Box(
                 Modifier
-                    .size(25.dp)
+                    .size(65.dp)
                     .background(MaterialTheme.colors.background, shape = CircleShape)
-                    .padding(8.dp)
+                    .padding(8.dp), contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
                     color = MaterialTheme.colors.primary,
-                    progress = item.ratio.toFloat(),
-                    strokeWidth = 5.dp,
+                    progress = rounded,
+                    strokeWidth = 1.dp,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Transparent, shape = CircleShape)
                 )
-                Column(modifier =  Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text = "${rounded * 100}%",color = MaterialTheme.colors.primary)
-                }
+                Text(text = "${(rounded * 100).toInt()}%", color = MaterialTheme.colors.primary)
             }
         }
+        Box(
+            modifier = Modifier
+                .height(2.dp)
+                .fillMaxWidth()
+                .background(color = Color.Black)
+        )
     }
 }

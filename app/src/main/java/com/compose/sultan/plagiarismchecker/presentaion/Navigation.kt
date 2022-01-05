@@ -11,8 +11,9 @@ import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.navigation.*
 import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
 import java.util.ArrayList
 
 // It contains route names to all three screens
@@ -21,7 +22,7 @@ sealed class Routes(val route: String) {
     object Menu : Routes("menu_screen")
     object Main : Routes("main_screen")
     object DB : Routes("db_compare")
-    object ResultResult : Routes("result_screen")
+    object ResultResult : Routes("result_screen/{items}")
     object Search : Routes("search_screen/{text}")
 }
 
@@ -72,16 +73,12 @@ fun Navigation(activity: MainActivity) {
             )
         ) {
             val x = it.arguments?.getString("items") ?: ""
-            val moshi = Moshi.Builder().build()
-            val type = Types.newParameterizedType(
-                ArrayList::class.java,
-                SimilarityBetweenString::class.java
-            )
-            val adapter = moshi.adapter<ArrayList<SimilarityBetweenString>>(type)
-
+            val gson = Gson()
+            val type: Type = object : TypeToken<ArrayList<SimilarityBetweenString>>(){}.type
+            val items:ArrayList<SimilarityBetweenString> = gson.fromJson(x,type)
             ResultScreen(
                 navController,
-                adapter.fromJson(x)?: listOf()
+                items
             )
         }
 
