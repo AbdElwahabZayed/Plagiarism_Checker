@@ -13,18 +13,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenFiles
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
 import com.compose.sultan.plagiarismchecker.presentaion.components.FileSimilarity
-import com.compose.sultan.plagiarismchecker.presentaion.components.ItemSimilarity
-import java.util.ArrayList
+
 
 @Composable
-fun ResultScreen(navController: NavController, list: List<SimilarityBetweenString>,
-                 totalSimilarityBetweenFilesList:String){
+fun TotalResultScreen(navController: NavController, list: List<SimilarityBetweenFiles>) {
     Column() {
         LazyColumn {
             items(list) { item ->
-                ItemSimilarity(item = item)
+                FileSimilarity(item = item)
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -33,7 +30,7 @@ fun ResultScreen(navController: NavController, list: List<SimilarityBetweenStrin
                 navController.popBackStack(Routes.Result.route)
             }, modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text(text = "Total Result")
+            Text(text = "OK")
         }
     }
 }

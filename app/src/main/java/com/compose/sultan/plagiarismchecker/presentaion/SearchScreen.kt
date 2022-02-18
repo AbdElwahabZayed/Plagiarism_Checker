@@ -10,13 +10,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
-import androidx.navigation.NavOptions
-import androidx.navigation.NavOptionsBuilder
 import com.compose.sultan.plagiarismchecker.MainActivity
 import com.compose.sultan.plagiarismchecker.R
+import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenFiles
 import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
 import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance
 import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUri
+import com.compose.sultan.plagiarismchecker.utils.Constants.ITEMS
+import com.compose.sultan.plagiarismchecker.utils.Constants.TOTAL_SIMILARITY
 import com.google.gson.Gson
 import com.skydoves.landscapist.glide.GlideImage
 import kotlinx.coroutines.CoroutineScope
@@ -32,38 +33,48 @@ fun SearchScreen(activity: MainActivity, navController: NavController, text: Str
     val arr = remember {
         ArrayList<SimilarityBetweenString>()
     }
-    val scope= rememberCoroutineScope()
-    LaunchedEffect(""){
+    var totalSimilarityRatioBetweenFiles = remember {
+        ArrayList<SimilarityBetweenFiles>()
+    }
+    //val scope = rememberCoroutineScope()
+    LaunchedEffect("") {
         CoroutineScope(this.coroutineContext).launch {
             Log.e("SearchScreen", "SearchScreen: *-${text}")
             Log.e("SearchScreen", "SearchScreen: *-${text.split("`~`").size}")
             activity.myViewModel.mFiles.onEach {
                 it.forEach { file ->
                     text.split("`~`").forEach { str1 ->
-                        readWordDocFromUri(Uri.parse(file.path), activity).forEach { str2 ->
+                        var totalSimilarityRatioBetweenFilesRatio=0.0
+                        val innerFilesList = readWordDocFromUri(Uri.parse(file.path), activity)
+                        innerFilesList.forEach { str2  ->
                             val ratio = LevenshteinDistance.similarity(str1, str2)
+                            totalSimilarityRatioBetweenFilesRatio += ratio
                             if (ratio > 0.19 && str2.length > 30) {
-                                arr.add(SimilarityBetweenString(str2, ratio, file.name ?: ""))
+                                arr.add(SimilarityBetweenString(str2, ratio, file.name ?: "Anonymous"))
                             }
                         }
+                        totalSimilarityRatioBetweenFilesRatio /= innerFilesList.size
+                        totalSimilarityRatioBetweenFiles.add(SimilarityBetweenFiles(totalSimilarityRatioBetweenFilesRatio,file.name?:"Anonymous"))
                     }
                 }
                 withContext(Dispatchers.Main) {
                     val gson = Gson()
-                    navController.popBackStack(Routes.Search.route,true)
+                    navController.popBackStack(Routes.Search.route, true)
                     navController.navigate(
-                        Routes.ResultResult.route,
-                        Bundle().apply { putString("items", gson.toJson(arr)) })
+                        Routes.Result.route,
+                        Bundle().apply {
+                            putString( ITEMS , gson.toJson(arr))
+                            putString( TOTAL_SIMILARITY , gson.toJson(totalSimilarityRatioBetweenFiles))
+                        })
                 }
             }.launchIn(this)
         }
     }
- 
+
 
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center,
-    ) {
-
+    ){
         GlideImage(
             imageModel = R.drawable.search,
             contentDescription = "Search",

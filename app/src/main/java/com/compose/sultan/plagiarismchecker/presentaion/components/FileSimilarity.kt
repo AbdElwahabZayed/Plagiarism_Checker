@@ -15,15 +15,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
+import androidx.compose.ui.tooling.preview.Preview
+import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenFiles
 
-
+@Preview(showBackground = true)
 @Composable
-fun ItemSimilarity(item: SimilarityBetweenString) {
+fun FileSimilarity(item: SimilarityBetweenFiles =SimilarityBetweenFiles(0.52,"MyFile")) {
     val rounded = item.ratio.toFloat()
     Column(Modifier.padding(all = 8.dp)) {
-        Text(text = item.paragraph, style = TextStyle(color = Color.Black, fontSize = 15.sp))
-        Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
