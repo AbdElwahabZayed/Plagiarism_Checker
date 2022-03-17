@@ -232,10 +232,10 @@ fun MainScreen(activity: MainActivity) {
                         }
                     }
                 },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
-            ) {
-                Text(text = "CHECK PARAGLISIM")
-            }
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(text = "CHECK PARAGLISIM")
+                }
         }
         DefaultSnackbar(
             snackbarHostState = scaffoldState.snackbarHostState,

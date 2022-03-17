@@ -25,6 +25,7 @@ import android.os.Build.VERSION.SDK_INT
 import android.net.Uri
 import androidx.core.app.ActivityCompat
 import android.provider.Settings
+import android.util.Log
 import java.lang.Exception
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -47,6 +48,7 @@ import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance
 import kotlinx.coroutines.*
 import java.math.RoundingMode
 
+private const val TAG = "MainActivity"
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val PERMISSION_REQUEST_CODE = 556
@@ -120,13 +122,22 @@ class MainActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> if (grantResults.isNotEmpty()) {
-                val READ_EXTERNAL_STORAGE = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                val WRITE_EXTERNAL_STORAGE = grantResults[1] == PackageManager.PERMISSION_GRANTED
-                if (READ_EXTERNAL_STORAGE && WRITE_EXTERNAL_STORAGE) {
-                    // perform action when allow permission success
-                } else {
-                    Toast.makeText(this, "Allow permission for storage access!", Toast.LENGTH_SHORT)
-                        .show()
+                if(grantResults.size>2) {
+                    val READ_EXTERNAL_STORAGE = grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    val WRITE_EXTERNAL_STORAGE =
+                        grantResults[1] == PackageManager.PERMISSION_GRANTED
+                    if (READ_EXTERNAL_STORAGE && WRITE_EXTERNAL_STORAGE) {
+                        // perform action when allow permission success
+                    } else {
+                        Toast.makeText(
+                            this,
+                            "Allow permission for storage access!",
+                            Toast.LENGTH_SHORT
+                        )
+                            .show()
+                    }
+                }else{
+                    Log.e(TAG, "onRequestPermissionsResult: ",ArrayIndexOutOfBoundsException() )
                 }
             }
         }
