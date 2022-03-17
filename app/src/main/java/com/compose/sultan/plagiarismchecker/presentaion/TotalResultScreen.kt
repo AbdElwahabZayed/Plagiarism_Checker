@@ -12,12 +12,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenFiles
+import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
 import com.compose.sultan.plagiarismchecker.presentaion.components.FileSimilarity
 
 
 @Composable
-fun TotalResultScreen(navController: NavController, list: List<SimilarityBetweenFiles>) {
+fun TotalResultScreen(navController: NavController, list: List<SimilarityWithFile>) {
     Column() {
         LazyColumn {
             items(list) { item ->
@@ -27,7 +27,7 @@ fun TotalResultScreen(navController: NavController, list: List<SimilarityBetween
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-                navController.popBackStack(Routes.Result.route)
+                navController.popBackStack()
             }, modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = "OK")

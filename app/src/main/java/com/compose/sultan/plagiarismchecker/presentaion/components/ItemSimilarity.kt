@@ -15,11 +15,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
+import com.compose.sultan.plagiarismchecker.model.SimilarityWithParagraph
 
 
 @Composable
-fun ItemSimilarity(item: SimilarityBetweenString) {
+fun ItemSimilarity(item: SimilarityWithParagraph) {
     val rounded = item.ratio.toFloat()
     Column(Modifier.padding(all = 8.dp)) {
         Text(text = item.paragraph, style = TextStyle(color = Color.Black, fontSize = 15.sp))

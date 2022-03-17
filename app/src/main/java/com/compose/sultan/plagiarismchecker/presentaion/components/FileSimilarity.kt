@@ -16,11 +16,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenFiles
+import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
 
 @Preview(showBackground = true)
 @Composable
-fun FileSimilarity(item: SimilarityBetweenFiles =SimilarityBetweenFiles(0.52,"MyFile")) {
+fun FileSimilarity(item: SimilarityWithFile =SimilarityWithFile(0.52,"MyFile")) {
     val rounded = item.ratio.toFloat()
     Column(Modifier.padding(all = 8.dp)) {
         Row(

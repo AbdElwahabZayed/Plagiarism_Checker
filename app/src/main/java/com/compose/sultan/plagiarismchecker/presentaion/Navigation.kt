@@ -10,8 +10,8 @@ import com.compose.sultan.plagiarismchecker.MainActivity
 import android.os.Bundle
 import androidx.core.net.toUri
 import androidx.navigation.*
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenFiles
-import com.compose.sultan.plagiarismchecker.model.SimilarityBetweenString
+import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
+import com.compose.sultan.plagiarismchecker.model.SimilarityWithParagraph
 import com.compose.sultan.plagiarismchecker.utils.Constants.ITEMS
 import com.compose.sultan.plagiarismchecker.utils.Constants.TOTAL_SIMILARITY
 import com.google.gson.Gson
@@ -27,7 +27,7 @@ sealed class Routes(val route: String) {
     object DB : Routes("db_compare")
     object Result : Routes("result_screen/{$ITEMS}/{$TOTAL_SIMILARITY}")
     object Search : Routes("search_screen/{text}")
-    object TotalResult : Routes("total_result/{text}")
+    object TotalResult : Routes("total_result/{$TOTAL_SIMILARITY}")
 }
 
 @Composable
@@ -82,9 +82,9 @@ fun Navigation(activity: MainActivity) {
             val textItems = it.arguments?.getString(ITEMS) ?: ""
             val textTotalSimilarity = it.arguments?.getString(TOTAL_SIMILARITY) ?: ""
             val gson = Gson()
-            val typeItem: Type = object : TypeToken<ArrayList<SimilarityBetweenString>>() {}.type
+            val typeItem: Type = object : TypeToken<ArrayList<SimilarityWithParagraph>>() {}.type
 
-            val items: ArrayList<SimilarityBetweenString> = gson.fromJson(textItems, typeItem)
+            val items: ArrayList<SimilarityWithParagraph> = gson.fromJson(textItems, typeItem)
 
             ResultScreen(
                 navController,
@@ -102,10 +102,10 @@ fun Navigation(activity: MainActivity) {
             val gson = Gson()
             val textTotalSimilarity = it.arguments?.getString(TOTAL_SIMILARITY) ?: ""
             val typeTotalSimilarity: Type =
-                object : TypeToken<ArrayList<SimilarityBetweenFiles>>() {}.type
-            val totalSimilarityBetweenFilesList: ArrayList<SimilarityBetweenFiles> =
+                object : TypeToken<ArrayList<SimilarityWithFile>>() {}.type
+            val totalSimilarityWithFileList: ArrayList<SimilarityWithFile> =
                 gson.fromJson(textTotalSimilarity, typeTotalSimilarity)
-            TotalResultScreen(navController = navController,totalSimilarityBetweenFilesList)
+            TotalResultScreen(navController = navController,totalSimilarityWithFileList)
         }
     }
 }
