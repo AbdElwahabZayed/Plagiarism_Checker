@@ -1,57 +1,52 @@
-package com.compose.sultan.plagiarismchecker.presentaion
+package com.compose.sultan.plagiarismchecker.presentaion.dbCompareScreen
 
 import android.content.Intent
-import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.compose.sultan.plagiarismchecker.MainActivity
 import com.compose.sultan.plagiarismchecker.model.MyFile
+import com.compose.sultan.plagiarismchecker.presentaion.Routes
 import com.compose.sultan.plagiarismchecker.presentaion.components.DialogListOfFiles
-import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance.readWordDocFromUriToStringWithSplitter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @Composable
-fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
-    val (text1, setText1) = remember { mutableStateOf("") }
-    val (progressImportFromFile1, setProgressImportFromFile1) = remember { mutableStateOf(false) }
-    val (progressImportFromDB1, setProgressImportFromDB1) = remember { mutableStateOf(false) }
+fun DataBaseCompareScreen(
+    activity: MainActivity,
+    navController: NavController,
+    viewModel: DataBaseCompareViewModel = hiltViewModel()
+) {
     val (textPosition, setTextPosition) = remember { mutableStateOf(1) }
-    val (showDialog, setShowDialog) = remember { mutableStateOf(false) }
-
-    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
-            if (it.data != null) {
-                activity.lifecycleScope.launch {
-                    it.data?.let { myData ->
-                        val docString = readWordDocFromUriToStringWithSplitter(
-                            myData.data,
-                            activity.applicationContext
-                        )
-                        withContext(Dispatchers.Main) {
-                            setText1(docString)
-                            setProgressImportFromFile1(false)
-                        }
-                    }
-                }
-            } else {
-                setProgressImportFromFile1(false)
-            }
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
+            it.data?.let { data ->
+                viewModel.setFirstData(data.data)
+            } ?: run { viewModel.progressImportFromFirstFile = false }
         }
     Column(
         modifier = Modifier
@@ -68,7 +63,7 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
-                value = text1,
+                value = viewModel.firstText,
                 onValueChange = { /*setText1(it)*/ },
                 label = { Text("Text") },
                 modifier = Modifier
@@ -80,7 +75,7 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                if (progressImportFromFile1) {
+                if (viewModel.progressImportFromFirstFile) {
                     CircularProgressIndicator(modifier = Modifier.padding(horizontal = 64.dp))
                 } else {
                     Button(onClick = {
@@ -88,7 +83,7 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
                             val intent = Intent(Intent.ACTION_GET_CONTENT)
                             intent.type = "*/*"
                             launcher.launch(intent)
-                            setProgressImportFromFile1(true)
+                            viewModel.progressImportFromFirstFile = true
                         } else {
                             activity.requestPermission()
                             println("in Btn1 Else")
@@ -98,13 +93,13 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
                     }
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                if (progressImportFromDB1) {
+                if (viewModel.progressImportFromFirstDb) {
                     CircularProgressIndicator(modifier = Modifier.padding(horizontal = 64.dp))
                 } else {
                     Button(onClick = {
                         setTextPosition(1)
-                        setShowDialog(true)
-                        setProgressImportFromDB1(true)
+                        viewModel.showDialog = true
+                        viewModel.progressImportFromFirstDb = true
                     }) {
                         Text(text = "From DB")
                     }
@@ -113,27 +108,23 @@ fun DataBaseCompareScreen(activity: MainActivity, navController: NavController){
         }
         Spacer(modifier = Modifier.width(8.dp))
         Button(
-                onClick = {
-                    Log.e("SearchScreen", "SearchScreen: **- $text1")
-//                    navController.previousBackStackEntry?.arguments?.putString("text", text1)
-//                    navController.saveState()?.putString("text", text1)
-                    navController.navigate(Routes.Search.route,Bundle().apply { putString("text", text1) })
-                },
+            onClick = {
+                Log.e("SearchScreen", "SearchScreen: **- ${viewModel.firstText}")
+                navController.navigate(Routes.Search.route)
+            },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = "Compare with DB")
         }
         Spacer(modifier = Modifier.width(8.dp))
-        val files: List<MyFile> by activity.myViewModel.myFiles.observeAsState(listOf())
+        val files: List<MyFile> by activity.myViewModel.myFiles.collectAsStateWithLifecycle()
         DialogListOfFiles(
             files,
-            textPosition,
-            setText1,
-            {  },
-            showDialog,
-            setShowDialog,
-            setProgressImportFromDB1,
-            {  }
+            viewModel.showDialog,
+            { viewModel.showDialog = it },
+            {
+                viewModel.setFirstData(it)
+            }
         )
     }
 

@@ -1,0 +1,59 @@
+[versions]
+core = "0.2.0"
+kotlin = "2.0.0"  # Replace with latest version
+hilt = "2.51.1"
+navigation = "2.8.2"
+compose-bom = "2024.09.03"
+coreKtx = "1.13.1"
+room = "2.6.1"
+ksp = "2.0.0-1.0.21"
+androidGradlePlugin="8.4.2"
+androidTools = "31.5.2"
+navigationRuntimeKtx = "2.8.2"
+staxApi = "1.0-2"
+uiToolingPreviewAndroid = "1.7.3"
+navigationCompose = "2.8.2"
+xmlbeans = "3.0.1"
+
+[libraries]
+core = { module = "com.github.haroldadmin.lucilla:core", version.ref = "core" }
+hilt-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt" }
+navigation-safe-args = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigation" }
+android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
+android-tools-gradlePlugin = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
+androidx-room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
+kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+hilt-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.2.0" }
+
+
+# AndroidX Libraries
+core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
+material = { module = "com.google.android.material:material", version = "1.12.0" }
+activity-compose = { module = "androidx.activity:activity-compose", version = "1.9.2" }
+
+# Room
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+# Compose (with BOM)
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-ui = { group = "androidx.compose.ui", name = "ui" }
+compose-material = { group = "androidx.compose.material", name = "material" }
+
+# Other Dependencies
+glide = { module = "com.github.skydoves:landscapist-glide", version = "1.4.4" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+androidx-navigation-runtime-ktx = { group = "androidx.navigation", name = "navigation-runtime-ktx", version.ref = "navigationRuntimeKtx" }
+androidx-ui-tooling-preview-android = { group = "androidx.compose.ui", name = "ui-tooling-preview-android", version.ref = "uiToolingPreviewAndroid" }
+androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
+stax-api = { module = "javax.xml.stream:stax-api", version.ref = "staxApi" }
+
+
+[plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+

@@ -1,26 +1,26 @@
 package com.compose.sultan.plagiarismchecker.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.compose.sultan.plagiarismchecker.model.MyFile
 import com.compose.sultan.plagiarismchecker.repo.Repository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.single
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltViewModel
-class ActivityViewModel @Inject constructor(private val repo:Repository) : ViewModel() {
-    val myFiles:LiveData<List<MyFile>> = repo.filesFlow.asLiveData()
+class ActivityViewModel @Inject constructor(private val repo: Repository) : ViewModel() {
+    val myFiles = repo.filesFlow.stateIn(
+        viewModelScope,
+        SharingStarted.Eagerly,
+        emptyList()
+    )
 
-    val mFiles: Flow<List<MyFile>> = repo.filesFlow
-    suspend fun getFiles() = mFiles.first()
-    fun insertFile(myFile: MyFile){
-       viewModelScope.launch{
+    fun insertFile(myFile: MyFile) {
+        viewModelScope.launch {
             repo.insertFile(myFile)
-       }
+        }
     }
 }

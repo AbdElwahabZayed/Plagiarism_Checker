@@ -1,7 +1,14 @@
 package com.compose.sultan.plagiarismchecker.presentaion.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -13,14 +20,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
+import java.util.Random
 
 @Preview(showBackground = true)
 @Composable
-fun FileSimilarity(item: SimilarityWithFile =SimilarityWithFile(0.52,"MyFile")) {
+fun FileSimilarity(item: SimilarityWithFile = SimilarityWithFile(0.52, "MyFile")) {
     val rounded = item.ratio.toFloat()
     Column(Modifier.padding(all = 8.dp)) {
         Row(
@@ -42,6 +50,14 @@ fun FileSimilarity(item: SimilarityWithFile =SimilarityWithFile(0.52,"MyFile")) 
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            val rnd = Random()
+            val rnd2 = Random()
+            val color = android.graphics.Color.argb(
+                255,
+                rnd.nextInt(256),
+                rnd2.nextInt(256),
+                rnd.nextInt(256)
+            )
             Box(
                 Modifier
                     .size(65.dp)
@@ -49,14 +65,14 @@ fun FileSimilarity(item: SimilarityWithFile =SimilarityWithFile(0.52,"MyFile")) 
                     .padding(8.dp), contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
-                    color = MaterialTheme.colors.primary,
+                    color = Color(color),
                     progress = rounded,
-                    strokeWidth = 1.dp,
+                    strokeWidth = 2.dp,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Transparent, shape = CircleShape)
                 )
-                Text(text = "${(rounded * 100).toInt()}%", color = MaterialTheme.colors.primary)
+                Text(text = "${(rounded * 100).toInt()}%", color = Color(color))
             }
         }
         Box(

@@ -1,38 +1,32 @@
 package com.compose.sultan.plagiarismchecker.presentaion
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavType
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.compose.sultan.plagiarismchecker.MainActivity
-import android.os.Bundle
-import androidx.core.net.toUri
-import androidx.navigation.*
-import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
-import com.compose.sultan.plagiarismchecker.model.SimilarityWithParagraph
+import com.compose.sultan.plagiarismchecker.presentaion.dbCompareScreen.DataBaseCompareScreen
+import com.compose.sultan.plagiarismchecker.presentaion.dbCompareScreen.DataBaseCompareViewModel
+import com.compose.sultan.plagiarismchecker.presentaion.main.MainScreen
 import com.compose.sultan.plagiarismchecker.utils.Constants.ITEMS
 import com.compose.sultan.plagiarismchecker.utils.Constants.TOTAL_SIMILARITY
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
-import java.util.ArrayList
 
 // It contains route names to all three screens
 sealed class Routes(val route: String) {
-    object Splash : Routes("splash_screen")
-    object Menu : Routes("menu_screen")
-    object Main : Routes("main_screen")
-    object DB : Routes("db_compare")
-    object Result : Routes("result_screen/{$ITEMS}/{$TOTAL_SIMILARITY}")
-    object Search : Routes("search_screen/{text}")
-    object TotalResult : Routes("total_result/{$TOTAL_SIMILARITY}")
+    data object Splash : Routes("splash_screen")
+    data object Menu : Routes("menu_screen")
+    data object Main : Routes("main_screen")
+    data object DB : Routes("db_compare")
+    data object Result : Routes("result_screen/{$ITEMS}/{$TOTAL_SIMILARITY}")
+    data object Search : Routes("search_screen/{text}")
+    data object TotalResult : Routes("total_result/{$TOTAL_SIMILARITY}")
 }
 
 @Composable
 fun Navigation(activity: MainActivity) {
     val navController = rememberNavController()
+    val dataBaseCompareViewModel: DataBaseCompareViewModel = hiltViewModel()
     NavHost(
         navController = navController,
         startDestination = Routes.Splash.route
@@ -52,98 +46,26 @@ fun Navigation(activity: MainActivity) {
         }
         // DB Screen
         composable(Routes.DB.route) {
-            DataBaseCompareScreen(activity = activity, navController)
+            DataBaseCompareScreen(activity = activity, navController, dataBaseCompareViewModel)
         }
 
         // Search Screen
-        composable(Routes.Search.route,
-            arguments = listOf(navArgument("text") {
-                type = NavType.StringType
-            }
-            )) {
+        composable(Routes.Search.route) {
             SearchScreen(
-                activity = activity,
                 navController,
-                it.arguments?.getString("text") ?: "Null"
+                dataBaseCompareViewModel
             )
-
         }
 
         // Result list screen
-        composable(Routes.Result.route,
-            arguments = listOf(navArgument(ITEMS) {
-                type = NavType.StringType
-            },
-                navArgument(TOTAL_SIMILARITY) {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            val textItems = it.arguments?.getString(ITEMS) ?: ""
-            val textTotalSimilarity = it.arguments?.getString(TOTAL_SIMILARITY) ?: ""
-            val gson = Gson()
-            val typeItem: Type = object : TypeToken<ArrayList<SimilarityWithParagraph>>() {}.type
-
-            val items: ArrayList<SimilarityWithParagraph> = gson.fromJson(textItems, typeItem)
-
+        composable(Routes.Result.route) {
             ResultScreen(
                 navController,
-                items,
-                textTotalSimilarity
+                dataBaseCompareViewModel
             )
         }
-        composable(Routes.TotalResult.route,
-            arguments = listOf(
-                navArgument(TOTAL_SIMILARITY) {
-                    type = NavType.StringType
-                }
-            )
-        ) {
-            val gson = Gson()
-            val textTotalSimilarity = it.arguments?.getString(TOTAL_SIMILARITY) ?: ""
-            val typeTotalSimilarity: Type =
-                object : TypeToken<ArrayList<SimilarityWithFile>>() {}.type
-            val totalSimilarityWithFileList: ArrayList<SimilarityWithFile> =
-                gson.fromJson(textTotalSimilarity, typeTotalSimilarity)
-            TotalResultScreen(navController = navController,totalSimilarityWithFileList)
+        composable(Routes.TotalResult.route) {
+            TotalResultScreen(navController = navController, dataBaseCompareViewModel)
         }
-    }
-}
-
-
-fun NavController.navigate(
-    route: String,
-    args: Bundle,
-    navOptions: NavOptions? = null,
-    navigatorExtras: Navigator.Extras? = null
-) {
-    val routeLink = NavDeepLinkRequest
-        .Builder
-        .fromUri(NavDestination.createRoute(route).toUri())
-        .build()
-
-    val deepLinkMatch = graph.matchDeepLink(routeLink)
-    if (deepLinkMatch != null) {
-        val destination = deepLinkMatch.destination
-        val id = destination.id
-        navigate(id, args, navOptions, navigatorExtras)
-    } else {
-        navigate(route, navOptions, navigatorExtras)
-    }
-}
-
-fun NavController.popBackStack(
-    route: String,
-) {
-    val routeLink = NavDeepLinkRequest
-        .Builder
-        .fromUri(NavDestination.createRoute(route).toUri())
-        .build()
-
-    val deepLinkMatch = graph.matchDeepLink(routeLink)
-    if (deepLinkMatch != null) {
-        val destination = deepLinkMatch.destination
-        val id = destination.id
-        popBackStack(id, true)
     }
 }

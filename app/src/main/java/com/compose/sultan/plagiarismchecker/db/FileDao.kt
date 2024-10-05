@@ -3,7 +3,7 @@ package com.compose.sultan.plagiarismchecker.db
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy.REPLACE
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.compose.sultan.plagiarismchecker.model.MyFile
 import kotlinx.coroutines.flow.Flow
@@ -16,10 +16,10 @@ interface FileDao {
     @Query("SELECT * FROM myfile WHERE name LIKE :name AND path LIKE :path LIMIT 1")
     fun findByName(name: String, path: String): Flow<MyFile>
 
-    @Insert(onConflict = REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg files: MyFile)
 
-    @Insert(onConflict = REPLACE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFile(file: MyFile)
 
     @Delete

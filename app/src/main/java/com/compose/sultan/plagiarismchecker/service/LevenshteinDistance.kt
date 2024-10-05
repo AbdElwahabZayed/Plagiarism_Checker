@@ -1,23 +1,18 @@
 package com.compose.sultan.plagiarismchecker.service
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import androidx.compose.ui.text.toLowerCase
-import com.asutosh.documentreader.FilePathHelper
-import org.apache.poi.hwpf.HWPFDocument
-import org.apache.poi.hwpf.extractor.WordExtractor
 import org.apache.poi.xwpf.usermodel.XWPFDocument
-import org.apache.poi.xwpf.usermodel.XWPFParagraph
-import java.io.File
-import java.io.FileInputStream
-import java.util.*
+import java.util.Locale
 import kotlin.math.min
+
 
 object LevenshteinDistance {
     /**
      * Calculates the similarity (a number within 0 and 1) between two strings.
      */
-    fun  similarity(s1: String, s2: String): Double {
+    fun similarity(s1: String, s2: String): Double {
         var longer = s1
         var shorter = s2
         if (s1.length < s2.length) { // longer should always have greater length
@@ -28,10 +23,8 @@ object LevenshteinDistance {
         return if (longerLength == 0) {
             1.0 /* both strings are zero length */
         } else (longerLength - computeEditDistance(longer, shorter)) / longerLength.toDouble()
-        /* // If you have Apache Commons Text, you can use it to calculate the edit distance:
-    LevenshteinDistance levenshteinDistance = new LevenshteinDistance();
-    return (longerLength - levenshteinDistance.apply(longer, shorter)) / (double) longerLength; */
     }
+
     private fun computeEditDistance(str1: String, str2: String): Int {
         var s1 = str1
         var s2 = str2
@@ -87,80 +80,28 @@ object LevenshteinDistance {
 //    }
 
     fun readWordDocFromUri(uri: Uri?, context: Context?): List<String> {
+        return getListFromUri(context!!, uri!!)
+    }
 
-        val file = File(context?.let { FilePathHelper(it).getPath(uri!!) }!!)
-        val fullDocumentString: StringBuilder = StringBuilder()
-        val fis = FileInputStream(file.absolutePath)
-        var paragraphs: Array<String> = arrayOf()
-        if (file.extension == "doc") {
-            val doc = HWPFDocument(fis)
-            val we = WordExtractor(doc)
-            paragraphs = we.paragraphText
-
-            return paragraphs.asList()
-
-        } else if (file.extension == "docx") {
-            val document = XWPFDocument(fis)
-            return document.paragraphs.map { it.text }
-
-
-        }else{
-            return listOf("")
+    fun getListFromUri(context: Context, uri: Uri): List<String> {
+        val contentResolver: ContentResolver = context.contentResolver
+        val list = mutableListOf("")
+        return try {
+            contentResolver.openInputStream(uri).use { inputStream ->
+                val document = XWPFDocument(inputStream)
+                return list.apply {
+                    addAll(document.paragraphs.map { it.text })
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            list
+            // Handle the exception
         }
     }
 
-    fun readWordDocFromUriToString(uri: Uri?, context: Context?): String {
-
-        val file = File(context?.let { FilePathHelper(it).getPath(uri!!) }!!)
-        val fullDocumentString: StringBuilder = StringBuilder()
-        val fis = FileInputStream(file.absolutePath)
-
-        if (file.extension == "doc") {
-            val doc = HWPFDocument(fis)
-            val we = WordExtractor(doc)
-            val paragraphs: Array<String> = we.paragraphText
-
-            for (para in paragraphs) {
-                fullDocumentString.append(para).append("\n")
-            }
-            fis.close()
-
-        } else if (file.extension == "docx") {
-            val document = XWPFDocument(fis)
-            val paragraphs: List<XWPFParagraph> = document.paragraphs
-
-            for (para in paragraphs) {
-                fullDocumentString.append(para.text).append("\n")
-            }
-            fis.close()
-        }
-        return fullDocumentString.toString()
-    }
     fun readWordDocFromUriToStringWithSplitter(uri: Uri?, context: Context?): String {
 
-        val file = File(context?.let { FilePathHelper(it).getPath(uri!!) }!!)
-        val fullDocumentString: StringBuilder = StringBuilder()
-        val fis = FileInputStream(file.absolutePath)
-
-        if (file.extension == "doc") {
-            val doc = HWPFDocument(fis)
-            val we = WordExtractor(doc)
-            val paragraphs: Array<String> = we.paragraphText
-
-            for (para in paragraphs) {
-                fullDocumentString.append(para).append("`~`")
-            }
-            fis.close()
-
-        } else if (file.extension == "docx") {
-            val document = XWPFDocument(fis)
-            val paragraphs: List<XWPFParagraph> = document.paragraphs
-
-            for (para in paragraphs) {
-                fullDocumentString.append(para.text).append("`~`")
-            }
-            fis.close()
-        }
-        return fullDocumentString.toString()
+        return getListFromUri(context!!, uri!!).joinToString { "~" }
     }
 }

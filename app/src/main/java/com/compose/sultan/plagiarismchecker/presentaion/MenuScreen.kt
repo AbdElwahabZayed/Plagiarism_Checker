@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.compose.sultan.plagiarismchecker.MainActivity
 import com.compose.sultan.plagiarismchecker.R
@@ -130,7 +131,7 @@ fun MenuScreen(activity: MainActivity, navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun Preview() {
-    val navController = rememberNavController()
+    val navController: NavHostController = rememberNavController()
     PlagiarismCheckerTheme {
         MenuScreen(MainActivity(), navController = navController)
     }

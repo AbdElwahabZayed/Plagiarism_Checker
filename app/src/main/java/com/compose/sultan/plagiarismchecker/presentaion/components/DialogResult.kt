@@ -1,5 +1,6 @@
 package com.compose.sultan.plagiarismchecker.presentaion.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,10 +16,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
-
+private const val TAG = "DialogResult"
 @Composable
 fun DialogResults(showDialog: Boolean, setShowDialog: (Boolean) -> Unit, progress: Float) {
     val dialogWidth = 250.dp
+    Log.e(
+        TAG,
+        "DialogResults() called with: showDialog = $showDialog, setShowDialog = $setShowDialog, progress = $progress"
+    )
     if (showDialog) {
         Dialog(onDismissRequest = { setShowDialog(false) }) {
             // Draw a rectangle shape with rounded corners inside the dialog
