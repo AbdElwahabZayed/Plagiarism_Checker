@@ -57,7 +57,7 @@ class DataBaseCompareViewModel @Inject constructor(
     fun compare(afterCalculate: () -> Unit) {
         viewModelScope.launch(Dispatchers.Default) {
             val list = mutableListOf<SimilarityWithFile>()
-            val arr = mutableListOf<SimilarityWithParagraph>()
+            val arr = mutableMapOf<String, SimilarityWithParagraph>()
             val myFiles = repo.filesFlow.first()
             val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
             val innerFilesText =
@@ -72,7 +72,8 @@ class DataBaseCompareViewModel @Inject constructor(
                             val text2 = removeWordsFromString(outerParagraph, removedWords)
                             val currentRatio = LevenshteinDistance.similarity(text1, text2)
                             if (currentRatio > GLOBAL_ALLOWED_PERCENTAGE) {
-                                arr.add(
+                                addOrUpdateIfHigher(
+                                    arr,
                                     SimilarityWithParagraph(
                                         outerParagraph, currentRatio, file.name ?: "Anonymous"
                                     )
@@ -92,7 +93,7 @@ class DataBaseCompareViewModel @Inject constructor(
                 Log.e("TAG", "compare:end ")
             }
             withContext(Dispatchers.Main) {
-                similarityWithParagraphs = arr
+                similarityWithParagraphs = arr.values.toList()
                 totalSimilarityRatioBetweenFiles = list
                 Log.e("TAG", "compare: last")
                 afterCalculate()
@@ -100,5 +101,22 @@ class DataBaseCompareViewModel @Inject constructor(
         }
     }
 }
+
+
+fun addOrUpdateIfHigher(
+    map: MutableMap<String, SimilarityWithParagraph>,
+    newEntry: SimilarityWithParagraph
+) {
+    val existingEntry = map[newEntry.paragraph]
+
+    if (existingEntry == null || newEntry.ratio > existingEntry.ratio) {
+        // Add or update the map only if the new ratio is higher
+        map[newEntry.paragraph] = newEntry
+        println("Updated: ${newEntry.paragraph}")
+    } else {
+        println("Existing ratio is higher or equal, no update: ${newEntry.paragraph}")
+    }
+}
+
 
 
