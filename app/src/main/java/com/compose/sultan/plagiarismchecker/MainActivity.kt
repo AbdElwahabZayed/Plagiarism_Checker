@@ -1,7 +1,6 @@
 package com.compose.sultan.plagiarismchecker
 
 import android.os.Bundle
-import android.os.Environment
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +12,6 @@ import com.compose.sultan.plagiarismchecker.ui.theme.PlagiarismCheckerTheme
 import com.compose.sultan.plagiarismchecker.viewmodel.ActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
-private const val TAG = "MainActivity"
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -31,11 +29,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-
-    fun checkPermission(): Boolean {
-        return Environment.isExternalStorageManager()
     }
 
 }

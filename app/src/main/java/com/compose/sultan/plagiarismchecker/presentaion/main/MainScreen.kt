@@ -120,15 +120,10 @@ fun MainScreen(
                 } else {
                     Button(
                         onClick = {
-                            if (activity.checkPermission()) {
-                                viewModel.progressImportFromSecondFile = true
-                                activity.filePicker.pickFile {
-                                    val path = it?.file?.path ?: return@pickFile
-                                    viewModel.setSecondData(path)
-                                }
-                            } else {
-                                activity.requestPermission()
-                                println("in Btn1 Else")
+                            viewModel.progressImportFromSecondFile = true
+                            activity.filePicker.pickFile {
+                                val path = it?.file?.path ?: return@pickFile
+                                viewModel.setSecondData(path)
                             }
                         }
                     ) {
