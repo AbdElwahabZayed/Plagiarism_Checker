@@ -1,7 +1,15 @@
 package com.compose.sultan.plagiarismchecker.presentaion.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
@@ -16,13 +24,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.compose.sultan.plagiarismchecker.model.SimilarityWithParagraph
+import java.util.Random
 
 
 @Composable
 fun ItemSimilarity(item: SimilarityWithParagraph) {
     val rounded = item.ratio.toFloat()
-    Column(Modifier.padding(all = 8.dp)) {
-        Text(text = item.paragraph, style = TextStyle(color = Color.Black, fontSize = 15.sp))
+    Column(Modifier.padding(all = 4.dp)) {
+        Text(
+            text = item.paragraph, modifier = Modifier
+                .padding(all = 4.dp), style = TextStyle(color = Color.Black, fontSize = 15.sp)
+        )
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier
@@ -33,7 +45,7 @@ fun ItemSimilarity(item: SimilarityWithParagraph) {
             Text(
                 text = item.fileName.replace("primary", "File Name"),
                 modifier = Modifier
-                    .padding(all = 4.dp)
+                    .padding(all = 8.dp)
                     .weight(2f),
                 style = TextStyle(
                     color = Color.Black,
@@ -43,21 +55,32 @@ fun ItemSimilarity(item: SimilarityWithParagraph) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            val rnd = Random()
+            val rnd2 = Random()
+            rnd2.nextFloat()
+            val color = android.graphics.Color.argb(
+                255,
+                rnd.nextInt(256),
+                rnd2.nextInt(256),
+                rnd.nextInt(256)
+            )
+
             Box(
                 Modifier
                     .size(65.dp)
                     .background(MaterialTheme.colors.background, shape = CircleShape)
                     .padding(8.dp), contentAlignment = Alignment.Center
             ) {
+
                 CircularProgressIndicator(
-                    color = MaterialTheme.colors.primary,
+                    color = Color(color),
                     progress = rounded,
-                    strokeWidth = 1.dp,
+                    strokeWidth = 2.dp,
                     modifier = Modifier
                         .fillMaxSize()
                         .background(Color.Transparent, shape = CircleShape)
                 )
-                Text(text = "${(rounded * 100).toInt()}%", color = MaterialTheme.colors.primary)
+                Text(text = "${(rounded * 100).toInt()}%", color = Color(color))
             }
         }
         Box(

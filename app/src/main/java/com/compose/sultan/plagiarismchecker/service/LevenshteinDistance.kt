@@ -1,8 +1,5 @@
 package com.compose.sultan.plagiarismchecker.service
 
-import org.apache.poi.xwpf.usermodel.XWPFDocument
-import java.io.File
-import java.io.FileInputStream
 import java.util.Locale
 import kotlin.math.min
 
@@ -55,43 +52,6 @@ object LevenshteinDistance {
         }
         return costs[s2.length]
     }
-//    fun printDistance(s1: String, s2: String) {
-//        var s1 = s1
-//        var s2 = s2
-//        var similarityOfStrings = 0.0
-//        var editDistance = 0
-//        if (s1.length < s2.length) { // s1 should always be bigger
-//            val swap = s1
-//            s1 = s2
-//            s2 = swap
-//        }
-//        val bigLen = s1.length
-//        editDistance = computeEditDistance(s1, s2)
-//        similarityOfStrings = if (bigLen == 0) {
-//            1.0 /* both strings are zero length */
-//        } else {
-//            (bigLen - editDistance) / bigLen.toDouble()
-//        }
-//        //////////////////////////
-//        //System.out.println(s1 + "-->" + s2 + ": " +
-//        //      editDistance + " (" + similarityOfStrings + ")");
-//        println("$editDistance ($similarityOfStrings)")
-//    }
 
 
-    fun readFromFile(file: File): List<String> {
-        val list = mutableListOf("")
-        return try {
-            (FileInputStream(file)).use { inputStream ->
-                val document = XWPFDocument(inputStream)
-                return list.apply {
-                    addAll(document.paragraphs.map { it.text })
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            list
-            // Handle the exception
-        }
-    }
 }

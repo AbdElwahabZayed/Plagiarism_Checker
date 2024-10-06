@@ -1,7 +1,6 @@
 package com.compose.sultan.plagiarismchecker.presentaion.main
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,13 +9,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.sultan.plagiarismchecker.R
 import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance
+import com.compose.sultan.plagiarismchecker.utils.readFromFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.math.RoundingMode
 import java.util.stream.Collectors
 import javax.inject.Inject
 
@@ -37,7 +36,7 @@ class MainScreenViewModel @Inject constructor(
 
     fun setFirstData(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val docString = LevenshteinDistance.readFromFile(File(path))
+            val docString = readFromFile(File(path))
             withContext(Dispatchers.Main) {
                 firstText = docString.parallelStream().filter { it.isNotBlank() }
                     .collect(Collectors.joining("\n"))
@@ -49,7 +48,7 @@ class MainScreenViewModel @Inject constructor(
 
     fun setSecondData(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val docString = LevenshteinDistance.readFromFile(File(path))
+            val docString = readFromFile(File(path))
             withContext(Dispatchers.Main) {
                 secondText = docString.parallelStream().filter { it.isNotBlank() }
                     .collect(Collectors.joining("\n"))
@@ -64,13 +63,7 @@ class MainScreenViewModel @Inject constructor(
             val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
             val text1 = removeWordsFromString(firstText, removedWords)
             val text2 = removeWordsFromString(secondText, removedWords)
-            Log.e("TAG", "compare: f $firstText")
-            Log.e("TAG", "compare: S $secondText")
-            Log.e("TAG", "compare: f $text1")
-            Log.e("TAG", "compare: S $text2")
             val ratio = LevenshteinDistance.similarity(text1, text2)
-            val rounded = ratio.toBigDecimal().setScale(1, RoundingMode.UP).toFloat()
-            println("the res it == $rounded")
             withContext(Dispatchers.Main) {
                 progress = ratio.toFloat()
                 showResultDialog = true

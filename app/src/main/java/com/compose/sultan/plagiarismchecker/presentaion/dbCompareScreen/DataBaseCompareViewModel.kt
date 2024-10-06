@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
@@ -13,6 +14,7 @@ import com.compose.sultan.plagiarismchecker.presentaion.main.readFromRawResource
 import com.compose.sultan.plagiarismchecker.presentaion.main.removeWordsFromString
 import com.compose.sultan.plagiarismchecker.repo.Repository
 import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance
+import com.compose.sultan.plagiarismchecker.utils.readFromFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -22,18 +24,15 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.stream.Collectors
 import javax.inject.Inject
-import kotlin.streams.asSequence
 
 const val GLOBAL_ALLOWED_PERCENTAGE = 0.27
 
 @HiltViewModel
 class DataBaseCompareViewModel @Inject constructor(
-    @ApplicationContext
-    private val context: Context,
-    private val repo: Repository
+    @ApplicationContext private val context: Context, private val repo: Repository
 ) : ViewModel() {
+    private var firstFileParagraphs: List<String> = mutableListOf()
     var firstText by mutableStateOf("")
-    var firstFileParagraphs: List<String> = mutableListOf()
     var progressImportFromFirstFile by mutableStateOf(false)
     var progressImportFromFirstDb by mutableStateOf(false)
     var showDialog by mutableStateOf(false)
@@ -42,10 +41,12 @@ class DataBaseCompareViewModel @Inject constructor(
 
     fun setFirstData(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            firstFileParagraphs = LevenshteinDistance.readFromFile(File(path))
+            firstFileParagraphs = readFromFile(File(path))
             withContext(Dispatchers.Main) {
-                firstText = firstFileParagraphs.parallelStream().filter { it.isNotBlank() }
-                    .collect(Collectors.joining("\n"))
+                firstText = withContext(Dispatchers.Default) {
+                    firstFileParagraphs.parallelStream().filter { it.isNotBlank() }
+                        .collect(Collectors.joining("\n"))
+                }
                 progressImportFromFirstFile = false
                 progressImportFromFirstDb = false
             }
@@ -59,39 +60,33 @@ class DataBaseCompareViewModel @Inject constructor(
             val arr = mutableListOf<SimilarityWithParagraph>()
             val myFiles = repo.filesFlow.first()
             val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
+            val innerFilesText =
+                firstFileParagraphs.filter { it.length > 400 }.fastJoinToString { it }
             myFiles.parallelStream().forEach { file ->
-                var fileSimilarityWithFile = 0.0
                 val fileParagraphs =
-                    LevenshteinDistance.readFromFile(File(file.path)).parallelStream()
-                        .filter { it.length > 400 }
-                        .asSequence().toList()
+                    readFromFile(File(file.path)).filter { it.length > 400 }
                 fileParagraphs.parallelStream().forEach { outerParagraph ->
-                    var maxParagraphSimilarityWithOtherParagraphs = 0.0
                     firstFileParagraphs.parallelStream().filter { it.length > 400 }
                         .forEach { innerParagraph ->
                             val text1 = removeWordsFromString(innerParagraph, removedWords)
                             val text2 = removeWordsFromString(outerParagraph, removedWords)
-                            val currentRatio =
-                                LevenshteinDistance.similarity(text1, text2)
-                            if (currentRatio > maxParagraphSimilarityWithOtherParagraphs)
-                                maxParagraphSimilarityWithOtherParagraphs = currentRatio
+                            val currentRatio = LevenshteinDistance.similarity(text1, text2)
                             if (currentRatio > GLOBAL_ALLOWED_PERCENTAGE) {
                                 arr.add(
                                     SimilarityWithParagraph(
-                                        outerParagraph,
-                                        currentRatio,
-                                        file.name ?: "Anonymous"
+                                        outerParagraph, currentRatio, file.name ?: "Anonymous"
                                     )
                                 )
                             }
                         }
-                    fileSimilarityWithFile += maxParagraphSimilarityWithOtherParagraphs
                 }
-                fileSimilarityWithFile /= fileParagraphs.size
+                val fileSimilarityWithFile = LevenshteinDistance.similarity(
+                    fileParagraphs.fastJoinToString { it },
+                    innerFilesText
+                )
                 list.add(
                     SimilarityWithFile(
-                        fileSimilarityWithFile,
-                        file.name ?: "Anonymous"
+                        fileSimilarityWithFile, file.name ?: "Anonymous"
                     )
                 )
                 Log.e("TAG", "compare:end ")
