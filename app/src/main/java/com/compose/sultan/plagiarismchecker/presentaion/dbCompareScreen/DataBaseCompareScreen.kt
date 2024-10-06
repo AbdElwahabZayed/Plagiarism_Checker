@@ -1,9 +1,6 @@
 package com.compose.sultan.plagiarismchecker.presentaion.dbCompareScreen
 
-import android.content.Intent
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,8 +19,6 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -41,13 +36,6 @@ fun DataBaseCompareScreen(
     navController: NavController,
     viewModel: DataBaseCompareViewModel = hiltViewModel()
 ) {
-    val (textPosition, setTextPosition) = remember { mutableStateOf(1) }
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
-            it.data?.let { data ->
-                viewModel.setFirstData(data.data)
-            } ?: run { viewModel.progressImportFromFirstFile = false }
-        }
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -79,15 +67,11 @@ fun DataBaseCompareScreen(
                     CircularProgressIndicator(modifier = Modifier.padding(horizontal = 64.dp))
                 } else {
                     Button(onClick = {
-                        if (activity.checkPermission()) {
-                            val intent = Intent(Intent.ACTION_GET_CONTENT)
-                            intent.type = "*/*"
-                            launcher.launch(intent)
-                            viewModel.progressImportFromFirstFile = true
-                        } else {
-                            activity.requestPermission()
-                            println("in Btn1 Else")
+                        activity.filePicker.pickFile {
+                            val path = it?.file?.path ?: return@pickFile
+                            viewModel.setFirstData(path)
                         }
+                        viewModel.progressImportFromFirstFile = true
                     }) {
                         Text(text = "From File")
                     }
@@ -97,7 +81,6 @@ fun DataBaseCompareScreen(
                     CircularProgressIndicator(modifier = Modifier.padding(horizontal = 64.dp))
                 } else {
                     Button(onClick = {
-                        setTextPosition(1)
                         viewModel.showDialog = true
                         viewModel.progressImportFromFirstDb = true
                     }) {
@@ -123,17 +106,11 @@ fun DataBaseCompareScreen(
             viewModel.showDialog,
             { viewModel.showDialog = it },
             {
-                viewModel.setFirstData(it)
+                it.path?.let { path ->
+                    viewModel.setFirstData(path)
+                }
             }
         )
     }
 
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun DBScreen() {
-//    PlagiarismCheckerTheme {
-//        DataBaseCompareScreen(MainActivity())
-//    }
-//}

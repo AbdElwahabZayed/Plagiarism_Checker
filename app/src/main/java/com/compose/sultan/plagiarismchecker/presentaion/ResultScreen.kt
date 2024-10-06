@@ -35,8 +35,8 @@ import com.compose.sultan.plagiarismchecker.presentaion.dbCompareScreen.DataBase
 fun ResultScreen(
     navController: NavController, viewModel: DataBaseCompareViewModel
 ) {
-    val totalRatio = remember(viewModel.arr) {
-        viewModel.arr.sumOf { it.ratio }
+    val totalRatio = remember(viewModel.similarityWithParagraphs) {
+        viewModel.similarityWithParagraphs.sumOf { it.ratio }
     }
     val refactoring = remember(totalRatio) {
         if (totalRatio > 1.0) 1.0 else totalRatio
@@ -84,7 +84,7 @@ fun ResultScreen(
                 .background(color = Color.Black)
         )
         LazyColumn(Modifier.weight(1f)) {
-            itemsIndexed(viewModel.arr) { _, item ->
+            itemsIndexed(viewModel.similarityWithParagraphs) { _, item ->
                 ItemSimilarity(item = item)
             }
         }

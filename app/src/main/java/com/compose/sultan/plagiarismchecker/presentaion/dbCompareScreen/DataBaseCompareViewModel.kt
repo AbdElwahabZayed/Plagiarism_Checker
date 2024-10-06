@@ -1,7 +1,6 @@
 package com.compose.sultan.plagiarismchecker.presentaion.dbCompareScreen
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,11 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.sultan.plagiarismchecker.model.SimilarityWithFile
 import com.compose.sultan.plagiarismchecker.model.SimilarityWithParagraph
-import com.compose.sultan.plagiarismchecker.model.getParagraphs
 import com.compose.sultan.plagiarismchecker.presentaion.main.readFromRawResource
 import com.compose.sultan.plagiarismchecker.presentaion.main.removeWordsFromString
 import com.compose.sultan.plagiarismchecker.repo.Repository
-import com.compose.sultan.plagiarismchecker.service.ArabicStemmer
 import com.compose.sultan.plagiarismchecker.service.LevenshteinDistance
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,8 +19,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.util.stream.Collectors
 import javax.inject.Inject
 import kotlin.streams.asSequence
+
+const val GLOBAL_ALLOWED_PERCENTAGE = 0.27
 
 @HiltViewModel
 class DataBaseCompareViewModel @Inject constructor(
@@ -31,24 +32,22 @@ class DataBaseCompareViewModel @Inject constructor(
     private val context: Context,
     private val repo: Repository
 ) : ViewModel() {
-    private val stemmer = ArabicStemmer()
     var firstText by mutableStateOf("")
+    var firstFileParagraphs: List<String> = mutableListOf()
     var progressImportFromFirstFile by mutableStateOf(false)
     var progressImportFromFirstDb by mutableStateOf(false)
     var showDialog by mutableStateOf(false)
-    lateinit var arr: MutableList<SimilarityWithParagraph>
-    lateinit var totalSimilarityRatioBetweenFiles: MutableList<SimilarityWithFile>
+    var similarityWithParagraphs by mutableStateOf<List<SimilarityWithParagraph>>(mutableListOf())
+    var totalSimilarityRatioBetweenFiles by mutableStateOf<List<SimilarityWithFile>>(mutableListOf())
 
-
-    fun setFirstData(uri: Uri?) {
+    fun setFirstData(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val docString =
-                LevenshteinDistance.readWordDocFromUri(uri, context)
-            val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
-            val text = removeWordsFromString(docString.toString(), removedWords)
+            firstFileParagraphs = LevenshteinDistance.readFromFile(File(path))
             withContext(Dispatchers.Main) {
-                firstText = text
+                firstText = firstFileParagraphs.parallelStream().filter { it.isNotBlank() }
+                    .collect(Collectors.joining("\n"))
                 progressImportFromFirstFile = false
+                progressImportFromFirstDb = false
             }
         }
     }
@@ -56,23 +55,27 @@ class DataBaseCompareViewModel @Inject constructor(
 
     fun compare(afterCalculate: () -> Unit) {
         viewModelScope.launch(Dispatchers.Default) {
+            val list = mutableListOf<SimilarityWithFile>()
+            val arr = mutableListOf<SimilarityWithParagraph>()
             val myFiles = repo.filesFlow.first()
-            Log.e("SearchScreen2", "SearchScreen: *-${firstText}")
-            Log.e("SearchScreen2", "SearchScreen: *-${firstText.split("`~`").size}")
+            val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
             myFiles.parallelStream().forEach { file ->
                 var fileSimilarityWithFile = 0.0
                 val fileParagraphs =
-                    file.getParagraphs(context).parallelStream().filter { it.length > 30 }
+                    LevenshteinDistance.readFromFile(File(file.path)).parallelStream()
+                        .filter { it.length > 400 }
                         .asSequence().toList()
-                stemmer.process(fileParagraphs).parallelStream().forEach { outerParagraph ->
+                fileParagraphs.parallelStream().forEach { outerParagraph ->
                     var maxParagraphSimilarityWithOtherParagraphs = 0.0
-                    firstText.split("`~`").parallelStream().filter { it.length > 30 }
+                    firstFileParagraphs.parallelStream().filter { it.length > 400 }
                         .forEach { innerParagraph ->
+                            val text1 = removeWordsFromString(innerParagraph, removedWords)
+                            val text2 = removeWordsFromString(outerParagraph, removedWords)
                             val currentRatio =
-                                LevenshteinDistance.similarity(outerParagraph, innerParagraph)
+                                LevenshteinDistance.similarity(text1, text2)
                             if (currentRatio > maxParagraphSimilarityWithOtherParagraphs)
                                 maxParagraphSimilarityWithOtherParagraphs = currentRatio
-                            if (currentRatio > 0.19) {
+                            if (currentRatio > GLOBAL_ALLOWED_PERCENTAGE) {
                                 arr.add(
                                     SimilarityWithParagraph(
                                         outerParagraph,
@@ -85,14 +88,18 @@ class DataBaseCompareViewModel @Inject constructor(
                     fileSimilarityWithFile += maxParagraphSimilarityWithOtherParagraphs
                 }
                 fileSimilarityWithFile /= fileParagraphs.size
-                totalSimilarityRatioBetweenFiles.add(
+                list.add(
                     SimilarityWithFile(
                         fileSimilarityWithFile,
                         file.name ?: "Anonymous"
                     )
                 )
+                Log.e("TAG", "compare:end ")
             }
             withContext(Dispatchers.Main) {
+                similarityWithParagraphs = arr
+                totalSimilarityRatioBetweenFiles = list
+                Log.e("TAG", "compare: last")
                 afterCalculate()
             }
         }

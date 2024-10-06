@@ -1,9 +1,8 @@
 package com.compose.sultan.plagiarismchecker.service
 
-import android.content.ContentResolver
-import android.content.Context
-import android.net.Uri
 import org.apache.poi.xwpf.usermodel.XWPFDocument
+import java.io.File
+import java.io.FileInputStream
 import java.util.Locale
 import kotlin.math.min
 
@@ -79,15 +78,11 @@ object LevenshteinDistance {
 //        println("$editDistance ($similarityOfStrings)")
 //    }
 
-    fun readWordDocFromUri(uri: Uri?, context: Context?): List<String> {
-        return getListFromUri(context!!, uri!!)
-    }
 
-    fun getListFromUri(context: Context, uri: Uri): List<String> {
-        val contentResolver: ContentResolver = context.contentResolver
+    fun readFromFile(file: File): List<String> {
         val list = mutableListOf("")
         return try {
-            contentResolver.openInputStream(uri).use { inputStream ->
+            (FileInputStream(file)).use { inputStream ->
                 val document = XWPFDocument(inputStream)
                 return list.apply {
                     addAll(document.paragraphs.map { it.text })
@@ -98,10 +93,5 @@ object LevenshteinDistance {
             list
             // Handle the exception
         }
-    }
-
-    fun readWordDocFromUriToStringWithSplitter(uri: Uri?, context: Context?): String {
-
-        return getListFromUri(context!!, uri!!).joinToString { "~" }
     }
 }

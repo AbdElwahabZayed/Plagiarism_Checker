@@ -76,6 +76,8 @@ dependencies {
         }
     }
     implementation 'com.google.guava:guava:27.0.1-android'
+    implementation 'com.github.atwa:filepicker:2.0.0'
+
     modules {
         module("com.google.guava:listenablefuture") {
             replacedBy("com.google.guava:guava", "listenablefuture is part of guava")

@@ -1,12 +1,13 @@
 package com.compose.sultan.plagiarismchecker.presentaion
 
-import android.content.Intent
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.MaterialTheme
@@ -28,18 +29,6 @@ import com.compose.sultan.plagiarismchecker.ui.theme.PlagiarismCheckerTheme
 
 @Composable
 fun MenuScreen(activity: MainActivity, navController: NavController) {
-    val fabLuncher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult()) {
-            it.data?.let { myData ->
-                val myFile = MyFile(
-                    myData.data?.pathSegments?.last(),
-                    myData.data?.toString() ?: ""
-                )
-                activity.myViewModel.insertFile(myFile = myFile)
-                Toast.makeText(activity, "File Added Successfully", Toast.LENGTH_LONG).show()
-                println("File Added Successfully")
-            }
-        }
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -100,13 +89,15 @@ fun MenuScreen(activity: MainActivity, navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
         Column(
             modifier = Modifier.clickable {
-                if (activity.checkPermission()) {
-                    val intent = Intent(Intent.ACTION_GET_CONTENT)
-                    intent.type = "*/*"
-                    fabLuncher.launch(intent)
-                } else {
-                    activity.requestPermission()
-                    println("in Btn1 Else")
+                activity.filePicker.pickFile {
+                    val name = it?.name ?: return@pickFile
+                    val path = it.file?.path ?: return@pickFile
+                    val myFile = MyFile(
+                        name,
+                        path
+                    )
+                    activity.myViewModel.insertFile(myFile)
+                    Toast.makeText(activity, "File Added Successfully", Toast.LENGTH_LONG).show()
                 }
             },
             verticalArrangement = Arrangement.Center,

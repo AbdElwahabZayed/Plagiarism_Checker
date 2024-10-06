@@ -1,9 +1,9 @@
 package com.compose.sultan.plagiarismchecker.presentaion.main
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -16,9 +16,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
 import java.math.RoundingMode
 import java.util.stream.Collectors
 import javax.inject.Inject
@@ -33,35 +30,29 @@ class MainScreenViewModel @Inject constructor(
     var progressImportFromSecondFile by mutableStateOf(false)
     var progressImportFromFirstDb by mutableStateOf(false)
     var progressImportFromSecDb by mutableStateOf(false)
-    var progress by mutableStateOf(0F)
+    var progress by mutableFloatStateOf(0F)
     var showDialog by mutableStateOf(false)
     var progressCheck by mutableStateOf(false)
     var showResultDialog by mutableStateOf(false)
-    fun setFirstData(uri: Uri?) {
+
+    fun setFirstData(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val docString = LevenshteinDistance.readWordDocFromUri(
-                uri, context
-            )
-            val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
-            val text = removeWordsFromString(docString.toString(), removedWords)
-            Log.e("TAG", "setFirstData: $text")
+            val docString = LevenshteinDistance.readFromFile(File(path))
             withContext(Dispatchers.Main) {
-                firstText = text
+                firstText = docString.parallelStream().filter { it.isNotBlank() }
+                    .collect(Collectors.joining("\n"))
                 progressImportFromFirstFile = false
                 progressImportFromFirstDb = false
             }
         }
     }
 
-    fun setSecondData(data: Uri?) {
+    fun setSecondData(path: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val docString = LevenshteinDistance.readWordDocFromUri(
-                data, context
-            )
-            val removedWords = withContext(Dispatchers.IO) { context.readFromRawResource() }
-            val text = removeWordsFromString(docString.toString(), removedWords)
+            val docString = LevenshteinDistance.readFromFile(File(path))
             withContext(Dispatchers.Main) {
-                secondText = text
+                secondText = docString.parallelStream().filter { it.isNotBlank() }
+                    .collect(Collectors.joining("\n"))
                 progressImportFromSecondFile = false
                 progressImportFromSecDb = false
             }
@@ -87,60 +78,6 @@ class MainScreenViewModel @Inject constructor(
             }
         }
     }
-
-    fun saveFirstFileToInternalCache(data: Uri?) {
-        try {
-            viewModelScope.launch {
-                // Get the internal cache directory
-                val cacheDir = context.cacheDir
-                // Create a new file in the cache directory
-                val destFile = File(cacheDir, data?.lastPathSegment ?: "FILE_${Math.random()}")
-
-                // Open input stream from the source URI
-                val inputStream: InputStream? = context.contentResolver.openInputStream(data!!)
-                // Open output stream to the destination file
-                val outputStream = FileOutputStream(destFile)
-
-                inputStream?.use { input ->
-                    outputStream.use { output ->
-                        // Copy the data
-                        input.copyTo(output)
-                    }
-                }
-                setFirstData(Uri.parse(destFile.absolutePath))
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-    fun saveSecFileToInternalCache(data: Uri?) {
-        try {
-            viewModelScope.launch {
-                // Get the internal cache directory
-                val cacheDir = context.cacheDir
-                // Create a new file in the cache directory
-                val destFile = File(cacheDir, data?.lastPathSegment ?: "FILE_${Math.random()}")
-
-                // Open input stream from the source URI
-                val inputStream: InputStream? = context.contentResolver.openInputStream(data!!)
-                // Open output stream to the destination file
-                val outputStream = FileOutputStream(destFile)
-
-                inputStream?.use { input ->
-                    outputStream.use { output ->
-                        // Copy the data
-                        input.copyTo(output)
-                    }
-                }
-                setSecondData(Uri.parse(destFile.absolutePath))
-            }
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-    }
-
-
 }
 
 fun Context.readFromRawResource(): List<String> {

@@ -1,9 +1,5 @@
 package com.compose.sultan.plagiarismchecker.presentaion.main
 
-import android.content.Intent
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +19,7 @@ import androidx.compose.material.Text
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,23 +39,7 @@ fun MainScreen(
     viewModel: MainScreenViewModel = hiltViewModel()
 ) {
     val scaffoldState = rememberScaffoldState()
-    val (textPosition, setTextPosition) = remember { mutableStateOf(1) }
-
-    val launcher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        it.data?.let { data ->
-            viewModel.saveSecFileToInternalCache(data.data)
-        } ?: run { viewModel.progressImportFromFirstFile = false }
-    }
-    val launcher1 = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        it.data?.let { data ->
-            viewModel.saveSecFileToInternalCache(data.data)
-        } ?: run { viewModel.progressImportFromSecondFile = false }
-    }
-
+    val (textPosition, setTextPosition) = remember { mutableIntStateOf(1) }
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -89,17 +69,14 @@ fun MainScreen(
                 if (viewModel.progressImportFromFirstFile) {
                     CircularProgressIndicator(modifier = Modifier.padding(horizontal = 64.dp))
                 } else {
-                    Button(onClick = {
-                        if (activity.checkPermission()) {
-                            val intent = Intent(Intent.ACTION_GET_CONTENT)
-                            intent.type = "*/*"
-                            launcher.launch(intent)
-                            viewModel.progressImportFromFirstFile = true
-                        } else {
-                            activity.requestPermission()
-                            println("in Btn1 Else")
+                    Button(
+                        onClick = {
+                            activity.filePicker.pickFile {
+                                val path = it?.file?.path ?: return@pickFile
+                                viewModel.setFirstData(path)
+                            }
                         }
-                    }) {
+                    ) {
                         Text(text = "From File")
                     }
                 }
@@ -145,11 +122,10 @@ fun MainScreen(
                         onClick = {
                             if (activity.checkPermission()) {
                                 viewModel.progressImportFromSecondFile = true
-                                val intent = Intent(Intent.ACTION_GET_CONTENT)
-                                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
-                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                intent.type = "*/*"
-                                launcher1.launch(intent)
+                                activity.filePicker.pickFile {
+                                    val path = it?.file?.path ?: return@pickFile
+                                    viewModel.setSecondData(path)
+                                }
                             } else {
                                 activity.requestPermission()
                                 println("in Btn1 Else")
@@ -201,10 +177,13 @@ fun MainScreen(
             { viewModel.showDialog = it },
             {
                 if (textPosition == 1) {
-                    Log.e("TAG", "MainScreen: p$textPosition $it", )
-                    viewModel.setFirstData(it)
+                    it.path?.let { path ->
+                        viewModel.setFirstData(path)
+                    }
                 } else {
-                    viewModel.setSecondData(it)
+                    it.path?.let { path ->
+                        viewModel.setSecondData(path)
+                    }
                 }
             }
         )
